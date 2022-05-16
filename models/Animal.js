@@ -61,18 +61,17 @@ const AnimalSchema = new mongoose.Schema({
   },
 });
 
-AnimalSchema.pre("findByIdAndUpdate", function (next) {
+AnimalSchema.pre("findOneAndUpdate", function (next) {
   // vpr dem speichern wird diese middleware zwischengespeichert,
   // hört auf save (darf keine array func sein)
-  this.updatedAt = new Date();
-  // this.updatedAt = Date.now();
+  this.set({ updatedAt: new Date() });
+
   console.log("pre läuft");
   next();
 });
 
 AnimalSchema.virtual("ageVirtual").get( function () {
-  const date = new Date(this.createdAt).getFullYear()
-  return this.birthYear - date;
+  return new Date(this.updatedAt).getFullYear() - this.birthYear
 });
 
 const exampleAnimalDoc = {
@@ -84,3 +83,22 @@ const exampleAnimalDoc = {
 };
 
 export default mongoose.model("AnimalsCollection", AnimalSchema);
+
+
+// {
+//   "_id": "62826a88e64ed21f70760e1f",
+//   "species": "DOG",
+//   "name": "xxxx Mario",
+//   "birthyear": 2010,
+//   "foods": {
+//     "likes": [
+//       "tuna"
+//     ],
+//     "dislikes": [
+//       "paprika"
+//     ]
+//   },
+//   "createdAt": "2022-05-16T15:15:20.324Z",
+//   "updatedAt": "2022-05-16T15:15:20.344Z",
+//   "__v": 0
+// }
