@@ -1,16 +1,17 @@
 import mongoose from "mongoose";
 
 const FoodSchema = new mongoose.Schema({
-  foods: {
-    likes: {
+  likes: [
+    {
       type: String,
-      enum: ["tuna", "meat"],
     },
-    dislikes: {
+  ],
+  dislikes: [
+    {
       type: String,
-      enum: ["paprika", "potatoes"],
     },
-  },
+  ],
+  _id: false,
 });
 
 const AnimalSchema = new mongoose.Schema({
@@ -27,23 +28,28 @@ const AnimalSchema = new mongoose.Schema({
     default: "Unknown",
   },
   birthyear: {
-    type: number,
+    type: Number,
     default: 0,
     required: true,
     min: 2000,
     max: 2023,
 
-    validator: (v) => v % 2 === 0,
-    message: (props) => `${props.value} is not an even number`,
+    // validator: (v) => v % 2 === 0,
+    // message: (props) => `${props.value} is not an even number`,
+    validate: {
+      validator: (value) => Number.isInteger(value), // Funktion, die meinen Wert überprüft und entweder true oder false zurückgeben muss
+      message: "year needs to be an integer",
+    },
   },
   foods: {
     type: FoodSchema,
-    required: true,
+    // required: true,
   },
+
   createdAt: {
     type: Date,
     immutable: true,
-    default: () => Date.now(),
+    default: () => Date.now(), // timestamp ab 1.1.1970
   },
 
   updatedAt: {
@@ -55,17 +61,26 @@ const AnimalSchema = new mongoose.Schema({
   },
 });
 
+AnimalSchema.pre("findByIdAndUpdate", function (next) {
+  // vpr dem speichern wird diese middleware zwischengespeichert,
+  // hört auf save (darf keine array func sein)
+  this.updatedAt = new Date();
+  // this.updatedAt = Date.now();
+  console.log("pre läuft");
+  next();
+});
+
+AnimalSchema.virtual("ageVirtual").get( function () {
+  const date = new Date(this.createdAt).getFullYear()
+  return this.birthYear - date;
+});
+
 const exampleAnimalDoc = {
   species: "CAT",
   name: "Sissi",
   birthyear: 2020,
   foods: { likes: "tuna", dislikes: "paprika" },
-  createdAt: now(),
+  createdAt: Date.now(),
 };
 
-export default mongoose.model("AnimalSchema", AnimalSchema);
-
-// playSchema.pre("save", function (next) {
-//   this.updatedAt = newDate();
-//   next();
-// });
+export default mongoose.model("AnimalsCollection", AnimalSchema);

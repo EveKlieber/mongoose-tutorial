@@ -1,7 +1,7 @@
 import express from "express";
 import {
   updateAnimal,
-  getAllAnimal,
+  getAllAnimals,
   addAnimal,
   deleteAnimal,
   getSingleAnimal,
@@ -10,13 +10,13 @@ import {
 const router = express.Router();
 
 router.route("/")
-  .get(getAllAnimal)
+  .get(getAllAnimals)
   .post(addAnimal);
 
 router
   .route("/:id")
   .delete(deleteAnimal)
   .get(getSingleAnimal)
-  .put(updateAnimal);
+  .patch(updateAnimal);
 
 export default router;
