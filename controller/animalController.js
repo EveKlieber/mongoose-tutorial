@@ -10,10 +10,10 @@ const getSingleAnimal = async (req, res) => {
   const id = req.params.id;
   const animal = await AnimalModel.findById(id);
   const date = new Date().getFullYear();
-  console.log(date);
-  console.log(animal.ageVirtual);
+  console.log("date this year", date);
+  console.log("virtual Age" , animal.ageVirtual);
   res.send({
-    age: animal.ageVirtual,
+    age: animal.ageVirtual,  // NaN
     animal,
   });
 };

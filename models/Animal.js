@@ -23,6 +23,10 @@ const AnimalSchema = new mongoose.Schema({
     required: true,
     uppercase: true,
   },
+  speciesId: {
+    type: mongoose.Schema.Types.Mixed,
+  default: ""
+  },
   name: {
     type: String,
     default: "Unknown",

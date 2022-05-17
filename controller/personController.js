@@ -1,9 +1,8 @@
 import PersonModel from "../models/Person.js";
-import mongoose from 'mongoose';
+// import mongoose from 'mongoose';
 
 export const addPerson = async (request, response, next) => {
-  // !try catch bzw. Errorhandling fehlt
-
+ 
   try {
     const newPerson = new PersonModel(request.body);
     await newPerson.save();
@@ -27,7 +26,6 @@ export const updatePerson =  async (request, response, next) => {
     // .updateOne returned uns ein Object mit metaInfos, wie z.B. "modifiedCount": 1,
    
    
-
     //Todo: anschauen, Unterschied klären
     const updatedPerson = await PersonModel.findByIdAndUpdate({_id: id}, request.body, {runValidators: true});
     //. findByIdAndUpdate returend uns das geupdatete Document bzw Model

@@ -7,6 +7,10 @@ import personRouter from './routes/person.js';
 import wineRouter from './routes/wine.js';
 import animalRouter from './routes/animal.js';
 
+// Mongoose Einstellung
+// mongoose.set('debug', true);  // Mongoose zeigt in console, welche BEfehle es aufruft
+
+
 
 // DATENBANK CONNECTION
 const userName = 'Eve'
@@ -14,10 +18,7 @@ const password = process.env.mongo_db_pwd
 const dbName = "pokemon-app"
 const cluster = 'cluster0.iekwj.mongodb.net'
 
-mongoose.connect(`mongodb+srv://${userName}:${password}@${cluster}/${dbName}?retryWrites=true&w=majority`, {
-  useNewUrlParser: true, // benutz keine optionen die eh bald rausfliegen (deprecated sind)
-  useUnifiedTopology: true
-})
+await mongoose.connect(`mongodb+srv://${userName}:${password}@${cluster}/${dbName}?retryWrites=true&w=majority` )
 
 const app = express();
 
@@ -31,3 +32,9 @@ app.use("/animal", animalRouter)
 app.listen(3000, () => {
   console.log('app ist listening on port 3000')
 })
+
+
+// {
+//   useNewUrlParser: true, // benutz keine optionen die eh bald rausfliegen (deprecated sind)
+//   useUnifiedTopology: true
+// }

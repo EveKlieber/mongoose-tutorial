@@ -10,7 +10,7 @@ const addressSchema = new mongoose.Schema({
       code: Number, // (code bedeutet hier Postleitzahl)
       name: {type: String, required: true}, // hier ist jetzt name verpflichtend => wir brauchen required => ich muss type verwenden
     },
-    _id: false 
+    _id:false // ohne bekommt city automatisch _id von mongoose (da verschachteltes dokument)
   },
 
   // "Sonderfall" eigenes Feld namens "type" (type eigentlich Schlüsselwort von mongoose)
@@ -18,7 +18,8 @@ const addressSchema = new mongoose.Schema({
     type: String, //.. und mit dem typen "String"
     enum: ["DE", "US"] // => type darf nur die Strings "DE" und "US" enthalten
   },
-  _id: false  // bekommt sonst automatisch weitere id von mongoose
+
+  _id: false // ohne bekommt street automatisch _id von mongoose (da verschachteltes dokument)
 });
 // Beispiel Teildocument nur für Street
 const exampleAdress = {
@@ -27,9 +28,10 @@ const exampleAdress = {
     code: 10456,
     name: "Berlin"
   },
-  type: "DE",
-  _id: false 
+  type: "DE"
 }
+
+
 
 const personSchema = new mongoose.Schema({
   name: {
@@ -42,15 +44,11 @@ const personSchema = new mongoose.Schema({
     unique: true, // jede E-Mail muss einzigartig sein
     trim: true // Leerzeichen am Anfang und Ende des String werden entfernt
   },
-  // something:type {
-  //   some1: String,
-  //   some2: Number
-  // },
   address: {
     type: addressSchema, // das Schema haben wir hier in "addressSchema" ausgelagert. Man könnte es aber auch direkt reinschreiben
     required: true // address field ist required
   },
-  // age: Number
+
   age: {
     type: Number,
     validate: {
@@ -59,18 +57,68 @@ const personSchema = new mongoose.Schema({
     },
     required: true
   },
-   // Todo: nachher
-   createdAt: {},
-   updatedAt: {}
+
+  createdAt: {
+    type: Date,
+    default: () => new Date(), // new Date wird erst aufgerufen, wenn man eine neue Instanz von Person erzeugt
+    immutable: true // der Wert kann nur einmal gesetzt und dann nicht mehr verändert werden
+  },
+  updatedAt: {
+    type: Date,
+    default: () => new Date()
+  }
 })
 
-const examplePersonDoc = {
-  name: "Regina Pawloski",
-  email: "regina@gmail.de",
-  address: exampleAdress,
-  age: 75
+const examplePersonDoc = {name: "Regina Pawloski",email: "regina_new4000@gmail.de",address: exampleAdress, age: 25 }
+
+//*** middleware zum Model hinzufügen ***
+// personSchema.pre(['save','updateOne'], function(next){
+//   // Diese Callback-Function wird jedes mal vor dem aufruf von .save() und .updateOne ausgeführt
+//   console.debug('mongoose save() oder updateOne() aufgerufen');
+
+//   this.updatedAt = new Date(); // Eigentlich müsste die FUnktion wegen updateOne "this.set(...)" aufrufen
+  
+//   next(); // ohne next würde save() niemals ausgeführt werden
+// });
+
+// *** virtual ***
+// Ein virtuelles Feld zu unserem Schema hinzufügen, das nicht in der Datenbank existiert
+
+personSchema.virtual("namedEmail").get(function(){
+  return `${this.name} <${this.email}>` // BSP: Regina Pawloski <regina_new4000@gmail.de>
+})
+const Person = mongoose.model("Person", personSchema);
+
+function testVirtual() {
+  const somePerson = new Person({name: "Person Pawloski",email: "Person_new4000@gmail.de",address: exampleAdress, age: 25 })
+  console.log("somePerson.name", somePerson.name)
+  console.log("somePerson.age", somePerson.age)
+  console.log("somePerson.namedEmail", somePerson.namedEmail)  // unser Virtuales Feld
+
+
+  // firstName und LastName als virtualles feld = fullname
+  // new Person({firstName: "Person", lastName:"Personlastname",email: "Person_new4000@gmail.de",address: exampleAdress, age: 25 })
+//   somePerson.fullName -> nützlich.
 }
+testVirtual();
+
+export default Person; 
+// - mongoose erzeugt automatisch eine collection namens "people", 
+// da es keine Mehrzahl von Person git ("persons" wäre falsch)
+// - jedoch könnten wir "new mongoose.Schema()"" einen zweiten Parameter
+// mitgeben und die collection nach unseren Wünschen bennen
+// z.B.const personSchema = new mongoose.Schema({...}, {collection: "users"})
 
 
-export default mongoose.model("Person", personSchema)  // steht people drin. weil mongoose mehrzahl macht. wir können einen collection nach.
-// "Person" ist der ausgangspunkt für die collection falls wir nichts anders voergeben.
+
+// *** Testen ***
+
+// Zum Testen der Middleware Erzeugen wir schon hier eine neue Instanz von Person
+async function testMiddleware(){
+  const Regina = new Person(examplePersonDoc);
+  await Regina.save(); // führt zu "mongoose save() aufgerufen" // => ruft unsere middleware nicht auf
+  // const res = await Regina.updateOne({name:"Regina Müller"}) // ruft unsere middleware nicht auf
+  console.log({res})
+}
+testMiddleware()
+
