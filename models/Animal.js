@@ -1,16 +1,8 @@
 import mongoose from "mongoose";
 
 const FoodSchema = new mongoose.Schema({
-  likes: [
-    {
-      type: String,
-    },
-  ],
-  dislikes: [
-    {
-      type: String,
-    },
-  ],
+  likes: [String],
+  dislikes: [String],
   _id: false,
 });
 
@@ -25,7 +17,7 @@ const AnimalSchema = new mongoose.Schema({
   },
   speciesId: {
     type: mongoose.Schema.Types.Mixed,
-  default: ""
+    default: "",
   },
   name: {
     type: String,
@@ -65,6 +57,15 @@ const AnimalSchema = new mongoose.Schema({
   },
 });
 
+// middleware
+// ZIEL: wird jedes mal aufgerufen, bevor .save() und .findOneAndUpdate ausgeführt werden
+// => setzt also updatedAt automatisch auf das aktuelle Datum beim Speichern und Updaten
+
+// für findOneAndUpdate: 
+// Da findOneAndUpdate(...) eine Methode des Models bzw Model-Klasse ist ( hier: Animal.findOneAndUpdate(...) )
+// kann man nicht direkt auf "this.updatedAt" in der middleware zugreifen.
+// Daher stellt uns mongoose "set" zur Verfügung
+
 AnimalSchema.pre("findOneAndUpdate", function (next) {
   // vpr dem speichern wird diese middleware zwischengespeichert,
   // hört auf save (darf keine array func sein)
@@ -74,8 +75,19 @@ AnimalSchema.pre("findOneAndUpdate", function (next) {
   next();
 });
 
-AnimalSchema.virtual("ageVirtual").get( function () {
-  return new Date(this.updatedAt).getFullYear() - this.birthYear
+// für save()
+// .save() wird auf der Instanz von Animal ausgeführt 
+// (z.b. myAnimal = new Animal({...}); myAnimal.save() ). 
+// Daher können wir hier direkt mit
+// this.updatedAt (ohne set) arbeiten
+AnimalSchema.pre("save", function (next) {
+  this.updatedAt = new Date();
+  next();
+})
+
+
+AnimalSchema.virtual("ageVirtual").get(function () {
+  return new Date(this.updatedAt).getFullYear() - this.birthYear;
 });
 
 const exampleAnimalDoc = {
@@ -86,8 +98,10 @@ const exampleAnimalDoc = {
   createdAt: Date.now(),
 };
 
-export default mongoose.model("AnimalsCollection", AnimalSchema);
+const AnimalModel = mongoose.model("AnimalsCollection", AnimalSchema);
+export default AnimalModel;
 
+// testen:
 
 // {
 //   "_id": "62826a88e64ed21f70760e1f",
@@ -106,3 +120,41 @@ export default mongoose.model("AnimalsCollection", AnimalSchema);
 //   "updatedAt": "2022-05-16T15:15:20.344Z",
 //   "__v": 0
 // }
+
+
+// *** testen ***
+// Voraussetzung: Diese datei sollte z.B. in app.js importiert werden, damit sie überhaupt 
+// ausgeführt wird
+export async function testingAdd(){
+  const meowaska = new AnimalModel({
+      name: "Meowaska",
+      species: "cat",
+      speciedId: "",
+      birthyear: 2018,
+  })
+
+  try {
+      await meowaska.save();
+      console.log("MyAnimal saved")
+  } catch(error) {
+      console.error(error);
+  }
+
+  // Noch virtual age testen:
+  console.debug("Age of Animal: ", meowaska.age)
+
+}
+
+export async function testingUpdate(){
+  let meowaska;
+  try {
+      meowaska = await AnimalModel.findOne({name: "Meowaska"});
+      meowaska.name = "Pani Meaowaska";
+      meowaska.save();
+      console.log("MyAnimal updated")
+  } catch(error) {
+      console.error(error);
+  }
+}
+testingAdd();
+// testingUpdate();

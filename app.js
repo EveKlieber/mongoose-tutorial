@@ -7,6 +7,8 @@ import personRouter from './routes/person.js';
 import wineRouter from './routes/wine.js';
 import animalRouter from './routes/animal.js';
 import Person from './models/Person.js';
+import { testingAdd } from './models/Animal.js'
+import { testingUpdate } from './models/Animal.js'
 
 // Mongoose Einstellung
 // mongoose.set('debug', true);  // Mongoose zeigt in console, welche BEfehle es aufruft
