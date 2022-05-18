@@ -76,12 +76,12 @@ const personSchema = new mongoose.Schema({
   },
 });
 
-const examplePersonDoc = {
-  name: "Regina Pawloski",
-  email: "regina_99@gmail.de",
-  address: exampleAdress,
-  age: 25,
-};
+// const examplePersonDoc = {
+//   name: "spezls Pawloski",
+//   email: "spezl_99@gmail.de",
+//   address: exampleAdress,
+//   age: 25,
+// };
 
 //*** middleware zum Model hinzufügen ***
 personSchema.pre(["save", "updateOne"], function (next) {
@@ -122,7 +122,7 @@ async function testMiddleware() {
 function testVirtual() {
   const somePerson = new Person({
     name: "Person Pawloski",
-    email: "Person_new4000@gmail.de",
+    email: "Person_new4099@gmail.de",
     address: exampleAdress,
     age: 25,
   });
@@ -130,12 +130,12 @@ function testVirtual() {
   console.log("somePerson.age", somePerson.age);
   console.log("somePerson.namedEmail", somePerson.namedEmail);
 }
-// testVirtual();
+testVirtual();
 
 async function addPersonWithFavoriteWines() {
   const somePersonData = {
     name: "TOMAS Pawloski",
-    email: "marc99@gmail.de",
+    email: "marc101@gmail.de",
     address: {
       street: "Schönhauser Allee 35",
       city: {

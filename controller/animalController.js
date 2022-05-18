@@ -9,11 +9,11 @@ const getAllAnimals = async (req, res) => {
 const getSingleAnimal = async (req, res) => {
   const id = req.params.id;
   const animal = await AnimalModel.findById(id);
-  const date = new Date().getFullYear();
-  console.log("date this year", date);
-  console.log("virtual Age" , animal.ageVirtual);
+  // const date = new Date().getFullYear();
+  // console.log("date this year", date);
+  console.log("animal" , animal);
   res.send({
-    age: animal.ageVirtual,  // NaN
+    age: animal.ageVirtual,  // 3
     animal,
   });
 };
@@ -33,14 +33,14 @@ const updateAnimal = async (req, res, next) => {
 
   try {
     // const updatedAnimal = await AnimalModel.findByIdAndUpdate(id, req.body, {
-      const updatedAnimal = await AnimalModel.findOneAndUpdate(id, req.body, {
+      const animal = await AnimalModel.findOneAndUpdate(id, req.body, {
         runValidators: true,
     });
-    const age = updatedAnimal.age;
+    const age = animal.age;
     res.status(200).send({
       msg: "animal updated!!",
       age,
-      old_animal: updatedAnimal,
+      old_animal: animal,
     });
   } catch (error) {
     res.status(500).send({

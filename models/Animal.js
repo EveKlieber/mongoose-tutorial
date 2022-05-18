@@ -90,10 +90,17 @@ AnimalSchema.pre("save", function (next) {
 //   return new Date(this.updatedAt).getFullYear() - this.birthYear;
 // });
 
-AnimalSchema.virtual("age").get(function () {
+AnimalSchema.virtual("age")
+  .get(function () {
   const ageVirtual = new Date().getFullYear() - this.birthyear;
   return ageVirtual;
 });
+
+// AnimalSchema.virtual('age')
+//   .get(function(){
+//     return new Date(this.updatedAt).getFullYear() - this.birthYear
+//   })
+
 
 const exampleAnimalDoc = {
   species: "CAT",
@@ -164,17 +171,18 @@ export async function testingUpdate() {
 async function testPopulate() {
   try {
     const catPopulated = await AnimalModel
-      .where("name")  // find wäre auch möglch.
+      .where("name")  // find wäre auch möglch wird aber schnell unübersichtlich.{}
       .equals("miauuuuuuuuuuuuuuuuuuuu")
-      .populate("speciesId"); // gibt mir alle daten aus Species.
-
+      // .populate("speciesId"); // gibt mir alle daten aus Species.
+      .populate("speciesId", "name cmAverageHeight -_id") 
+      // zweiter PArameter in populate entspricht select: gebe mir nur name und cmAverageHeight, ohne id
     console.log(catPopulated);
 
   } catch (error) {
     console.error(error);
   }
 }
-testPopulate();
+// testPopulate();
 
 // async function getAnimalWithSpecId(){
 //   const animalSpecs = await AnimalModel.where("speciesId").exists(true); // alle Personen, die das Feld favoriteWines haben
@@ -191,3 +199,7 @@ testPopulate();
 
 // testingAdd();
 // testingUpdate();
+
+
+
+// virtual - nur wie ein Zwischenspeicher. erst nach save aufruf. 
