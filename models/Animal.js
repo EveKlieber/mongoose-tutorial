@@ -28,8 +28,7 @@ const AnimalSchema = new mongoose.Schema({
     default: 0,
     required: true,
     min: 2000,
-    max: 2023,
-
+    max: new Date().getFullYear(), // maximal bis heute
     // validator: (v) => v % 2 === 0,
     // message: (props) => `${props.value} is not an even number`,
     validate: {
@@ -86,9 +85,15 @@ AnimalSchema.pre("save", function (next) {
 })
 
 
-AnimalSchema.virtual("ageVirtual").get(function () {
-  return new Date(this.updatedAt).getFullYear() - this.birthYear;
-});
+// AnimalSchema.virtual("ageVirtual").get(function () {
+//   return new Date(this.updatedAt).getFullYear() - this.birthYear;
+// });
+
+AnimalSchema.virtual('age').get(function () {
+  const ageVirtual = new Date().getFullYear() - this.birthyear;
+  return ageVirtual;
+})
+
 
 const exampleAnimalDoc = {
   species: "CAT",
@@ -129,7 +134,7 @@ export async function testingAdd(){
   const meowaska = new AnimalModel({
       name: "Meowaska",
       species: "cat",
-      speciedId: "",
+      speciedId: "",  //eigentlich unnötig, da defaultwert
       birthyear: 2018,
   })
 
@@ -141,7 +146,7 @@ export async function testingAdd(){
   }
 
   // Noch virtual age testen:
-  console.debug("Age of Animal: ", meowaska.age)
+  console.debug("Age of Animal: ", meowaska.ageVirtual)
 
 }
 

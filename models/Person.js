@@ -56,6 +56,13 @@ const personSchema = new mongoose.Schema({
     },
     required: true,
   },
+  favoriteWines: [
+    {
+      type: mongoose.SchemaTypes.ObjectId,
+      // type: Number,
+      ref: "myWine",
+    },
+  ],
 
   createdAt: {
     type: Date,
@@ -92,7 +99,9 @@ personSchema.virtual("namedEmail").get(function () {
   return `${this.name} <${this.email}>`; // BSP: Regina Pawloski <regina_new4000@gmail.de>
 });
 const Person = mongoose.model("Person", personSchema);
+export default Person;
 
+// testVirtual();
 function testVirtual() {
   const somePerson = new Person({
     name: "Person Pawloski",
@@ -108,9 +117,40 @@ function testVirtual() {
   // new Person({firstName: "Person", lastName:"Personlastname",email: "Person_new4000@gmail.de",address: exampleAdress, age: 25 })
   //   somePerson.fullName -> nützlich.
 }
-testVirtual();
 
-export default Person;
+// id connection person to favoriteWines
+async function addPersonWithFavoriteWines() {
+  const somePersonData = {
+    name: "Marc Pawloski",
+    email: "marc3@gmail.de",
+    address: {
+      street: "Schönhauser Allee 35",
+      city: {
+        code: 10456,
+        name: "Berlin",
+      },
+      type: "DE",
+    },
+    age: 35,
+    favoriteWines: ["6281f286a825ac821121b3fb"],
+  };
+
+  const somePerson = new Person(somePersonData);
+
+  await somePerson.save();
+  console.log("person saved");
+}
+// addPersonWithFavoriteWines();
+
+async function getPersonWithFavoritWineInfos(){
+  const winePeople = await Person.where("favoriteWines").exists(true); // alle Personen, die das Feld favoriteWines haben
+  console.log( "winePeople: ", JSON.stringify(winePeople, null, 2) )
+}
+getPersonWithFavoritWineInfos();
+
+
+
+
 // - mongoose erzeugt automatisch eine collection namens "people",
 // da es keine Mehrzahl von Person git ("persons" wäre falsch)
 // - jedoch könnten wir "new mongoose.Schema()"" einen zweiten Parameter
@@ -127,10 +167,12 @@ async function testMiddleware() {
     // const res = await Regina.updateOne({name:"Regina Müller"}) // ruft unsere middleware nicht auf
     // console.log({res})
     // await Person.insert({ test: true });
-    await mongoose.connection.collection('people').insertOne({test: "Bin ich da?", email: "evi@gmail.com"})
+    await mongoose.connection
+      .collection("people")
+      .insertOne({ test: "Bin ich da?", email: "evi7@gmail.com" });
     console.log("saved");
   } catch (error) {
     console.log(error);
   }
 }
-testMiddleware();
+// testMiddleware();  // email hochsetzten (unique)
